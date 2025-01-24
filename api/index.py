@@ -1,4 +1,3 @@
-import os
 import subprocess
 from flask import Flask, jsonify
 from selenium import webdriver
@@ -10,33 +9,6 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 
 app = Flask(__name__)
-
-# Check if Google Chrome is already installed
-def is_chrome_installed():
-    try:
-        subprocess.run(["google-chrome", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-# Function to install Google Chrome if it's not already installed
-def install_google_chrome():
-    if not is_chrome_installed():
-        download_command = "wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
-        install_command = "sudo apt install -y ./google-chrome-stable_current_amd64.deb"
-        
-        try:
-            # Download the Chrome package
-            subprocess.run(download_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # Install the package
-            subprocess.run(install_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print("Google Chrome installed successfully.")
-        except subprocess.CalledProcessError as e:
-            print(f"Error during installation: {e}")
-            return False
-    else:
-        print("Google Chrome is already installed.")
-    return True
 
 # Function to generate a random password (8 characters, at least 3 types of characters)
 def generate_random_password():
@@ -65,11 +37,38 @@ def generate_random_gmail():
     username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
     return f"{username}@gmail.com"
 
+# Function to check if Google Chrome is installed
+def is_chrome_installed():
+    try:
+        subprocess.run(["google-chrome-stable", "--version"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+# Function to install Google Chrome
+def install_google_chrome():
+    if not is_chrome_installed():
+        download_command = "wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+        install_command = "sudo apt install -y ./google-chrome-stable_current_amd64.deb"
+        
+        try:
+            # Download the Chrome package
+            subprocess.run(download_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # Install the package
+            subprocess.run(install_command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print("Google Chrome installed successfully.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error during installation: {e}")
+            return False
+    else:
+        print("Google Chrome is already installed.")
+    return True
+
 # Function to retrieve the value using Selenium
 def retrieve_value():
-    # Ensure Google Chrome is installed before proceeding
+    # Install Google Chrome if not installed
     if not install_google_chrome():
-        return "Error installing Google Chrome."
+        raise Exception("Google Chrome installation failed.")
 
     # Set up Chrome options for headless execution
     options = Options()
