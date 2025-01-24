@@ -1,3 +1,4 @@
+import subprocess
 from flask import Flask, jsonify
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -36,8 +37,35 @@ def generate_random_gmail():
     username = ''.join(random.choices(string.ascii_lowercase + string.digits, k=10))
     return f"{username}@gmail.com"
 
+# Function to install Google Chrome (Linux)
+def install_google_chrome():
+    try:
+        # Step 1: Download the Google Chrome .deb package
+        download_url = "https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+        download_command = ["wget", download_url, "-O", "google-chrome-stable_current_amd64.deb"]
+        subprocess.run(download_command, check=True)
+        
+        # Step 2: Install the downloaded .deb package
+        install_command = ["sudo", "dpkg", "-i", "google-chrome-stable_current_amd64.deb"]
+        subprocess.run(install_command, check=True)
+        
+        # Step 3: Handle any missing dependencies
+        fix_dependencies_command = ["sudo", "apt-get", "install", "-f"]
+        subprocess.run(fix_dependencies_command, check=True)
+        
+        # Clean up by removing the downloaded .deb file
+        subprocess.run(["rm", "google-chrome-stable_current_amd64.deb"], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"Error installing Google Chrome: {e}")
+        return False
+    return True
+
 # Function to retrieve the value using Selenium
 def retrieve_value():
+    # Ensure Chrome is installed first
+    if not install_google_chrome():
+        raise Exception("Google Chrome installation failed. Please check the logs.")
+    
     # Set up Chrome options for headless execution
     options = Options()
     options.add_argument("--headless")  # Run in headless mode
